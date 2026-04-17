@@ -84,11 +84,11 @@ export function matchOutfit(items, weather, gender = 'all', shuffleIndex = 0) {
   return outfit
 }
 
-export function getTempLabel(temp) {
-  if (temp < 0)  return { label: 'Sehr kalt', color: 'text-blue-600',   bg: 'bg-blue-50' }
-  if (temp < 8)  return { label: 'Kalt',      color: 'text-blue-500',   bg: 'bg-blue-50' }
-  if (temp < 15) return { label: 'Kühl',      color: 'text-cyan-600',   bg: 'bg-cyan-50' }
-  if (temp < 22) return { label: 'Mild',      color: 'text-green-600',  bg: 'bg-green-50' }
-  if (temp < 28) return { label: 'Warm',      color: 'text-orange-500', bg: 'bg-orange-50' }
-  return           { label: 'Heiß',           color: 'text-red-500',    bg: 'bg-red-50' }
+export function getTempLabel(temp, t) {
+  if (temp < 0)  return { label: t?.tempVeryCold ?? 'Very cold', color: 'text-blue-600',   bg: 'bg-blue-50' }
+  if (temp < 8)  return { label: t?.tempCold     ?? 'Cold',      color: 'text-blue-500',   bg: 'bg-blue-50' }
+  if (temp < 15) return { label: t?.tempCool     ?? 'Cool',      color: 'text-cyan-600',   bg: 'bg-cyan-50' }
+  if (temp < 22) return { label: t?.tempMild     ?? 'Mild',      color: 'text-green-600',  bg: 'bg-green-50' }
+  if (temp < 28) return { label: t?.tempWarm     ?? 'Warm',      color: 'text-orange-500', bg: 'bg-orange-50' }
+  return           { label: t?.tempHot           ?? 'Hot',       color: 'text-red-500',    bg: 'bg-red-50' }
 }

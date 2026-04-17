@@ -1,27 +1,29 @@
 import { useState, useEffect } from 'react'
+import { translations } from '../i18n/translations'
 
+// WMO code → { icon, rain, labelKey } — label resolved at render time via t()
 const WMO_CODES = {
-  0:  { label: 'Klar',                  icon: '☀️',  rain: false },
-  1:  { label: 'Überwiegend klar',      icon: '🌤️', rain: false },
-  2:  { label: 'Teilweise bewölkt',     icon: '⛅',  rain: false },
-  3:  { label: 'Bedeckt',              icon: '☁️',  rain: false },
-  45: { label: 'Nebel',                icon: '🌫️', rain: false },
-  48: { label: 'Reifnebel',            icon: '🌫️', rain: false },
-  51: { label: 'Leichter Nieselregen', icon: '🌧️', rain: true  },
-  53: { label: 'Nieselregen',          icon: '🌧️', rain: true  },
-  55: { label: 'Starker Nieselregen',  icon: '🌧️', rain: true  },
-  61: { label: 'Leichter Regen',       icon: '🌧️', rain: true  },
-  63: { label: 'Regen',                icon: '🌧️', rain: true  },
-  65: { label: 'Starker Regen',        icon: '🌧️', rain: true  },
-  71: { label: 'Leichter Schnee',      icon: '🌨️', rain: false },
-  73: { label: 'Schnee',               icon: '❄️',  rain: false },
-  75: { label: 'Starker Schnee',       icon: '❄️',  rain: false },
-  80: { label: 'Regenschauer',         icon: '🌦️', rain: true  },
-  81: { label: 'Regenschauer',         icon: '🌦️', rain: true  },
-  82: { label: 'Starke Regenschauer',  icon: '⛈️', rain: true  },
-  95: { label: 'Gewitter',             icon: '⛈️', rain: true  },
-  96: { label: 'Gewitter mit Hagel',   icon: '⛈️', rain: true  },
-  99: { label: 'Schweres Gewitter',    icon: '⛈️', rain: true  },
+  0:  { icon: '☀️',  rain: false, labelKey: 'wmo0'  },
+  1:  { icon: '🌤️', rain: false, labelKey: 'wmo1'  },
+  2:  { icon: '⛅',  rain: false, labelKey: 'wmo2'  },
+  3:  { icon: '☁️',  rain: false, labelKey: 'wmo3'  },
+  45: { icon: '🌫️', rain: false, labelKey: 'wmo45' },
+  48: { icon: '🌫️', rain: false, labelKey: 'wmo48' },
+  51: { icon: '🌧️', rain: true,  labelKey: 'wmo51' },
+  53: { icon: '🌧️', rain: true,  labelKey: 'wmo53' },
+  55: { icon: '🌧️', rain: true,  labelKey: 'wmo55' },
+  61: { icon: '🌧️', rain: true,  labelKey: 'wmo61' },
+  63: { icon: '🌧️', rain: true,  labelKey: 'wmo63' },
+  65: { icon: '🌧️', rain: true,  labelKey: 'wmo65' },
+  71: { icon: '🌨️', rain: false, labelKey: 'wmo71' },
+  73: { icon: '❄️',  rain: false, labelKey: 'wmo73' },
+  75: { icon: '❄️',  rain: false, labelKey: 'wmo75' },
+  80: { icon: '🌦️', rain: true,  labelKey: 'wmo80' },
+  81: { icon: '🌦️', rain: true,  labelKey: 'wmo81' },
+  82: { icon: '⛈️', rain: true,  labelKey: 'wmo82' },
+  95: { icon: '⛈️', rain: true,  labelKey: 'wmo95' },
+  96: { icon: '⛈️', rain: true,  labelKey: 'wmo96' },
+  99: { icon: '⛈️', rain: true,  labelKey: 'wmo99' },
 }
 
 // Open-Meteo benennt das Feld je nach API-Version unterschiedlich
@@ -29,7 +31,13 @@ function extractWeatherCode(current) {
   return current.weather_code ?? current.weathercode ?? 0
 }
 
-async function fetchWeatherData(lat, lon) {
+function resolveWmo(code, lang = 'en') {
+  const wmo = WMO_CODES[code] ?? { icon: '🌡️', rain: false, labelKey: null }
+  const t = translations[lang] ?? translations.en
+  return { ...wmo, label: wmo.labelKey ? (t[wmo.labelKey] ?? wmo.labelKey) : 'Unknown' }
+}
+
+async function fetchWeatherData(lat, lon, lang = 'en') {
   // Beide Feldnamen anfragen für maximale Kompatibilität
   const url = `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}&longitude=${lon}` +
@@ -42,13 +50,14 @@ async function fetchWeatherData(lat, lon) {
   const data = await res.json()
 
   const code = extractWeatherCode(data.current)
-  const wmo  = WMO_CODES[code] ?? { label: 'Unbekannt', icon: '🌡️', rain: false }
+  const wmo  = resolveWmo(code, lang)
 
   return {
     temp:      Math.round(data.current.temperature_2m),
     tempMax:   Math.round(data.daily.temperature_2m_max[0]),
     tempMin:   Math.round(data.daily.temperature_2m_min[0]),
     condition: wmo.label,
+    conditionKey: wmo.labelKey,
     icon:      wmo.icon,
     rain:      wmo.rain,
     windspeed: Math.round(data.current.windspeed_10m),
@@ -74,33 +83,34 @@ async function reverseGeocode(lat, lon) {
   }
 }
 
-function geoErrorMessage(err) {
-  switch (err?.code) {
-    case 1: return 'Standortzugriff verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.'
-    case 2: return 'Standort konnte nicht ermittelt werden (GPS nicht verfügbar).'
-    case 3: return 'Standort-Abfrage hat zu lange gedauert. Bitte erneut versuchen.'
-    default: return 'Standort nicht verfügbar. Bitte eine Stadt eingeben.'
-  }
-}
-
-export function useWeather() {
-  // loading=true von Anfang an — verhindert kurzes Aufblitzen des Fehlerzustands
+export function useWeather(lang = 'en') {
   const [weather,  setWeather]  = useState(null)
   const [location, setLocation] = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
+
+  const t = translations[lang] ?? translations.en
+
+  function geoErrorMessage(err) {
+    switch (err?.code) {
+      case 1: return t.weatherDenied
+      case 2: return t.weatherUnavailable
+      case 3: return t.weatherTimeout
+      default: return t.weatherNoGeo
+    }
+  }
 
   async function fetchByCity(cityName) {
     setLoading(true)
     setError(null)
     try {
       const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=de&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=${lang}&format=json`
       )
       const geoData = await geoRes.json()
-      if (!geoData.results?.length) throw new Error(`Stadt "${cityName}" nicht gefunden.`)
+      if (!geoData.results?.length) throw new Error(t.weatherCityNotFound(cityName))
       const { latitude, longitude, name } = geoData.results[0]
-      const weatherData = await fetchWeatherData(latitude, longitude)
+      const weatherData = await fetchWeatherData(latitude, longitude, lang)
       setWeather(weatherData)
       setLocation(name)
       setError(null)
@@ -111,18 +121,29 @@ export function useWeather() {
     }
   }
 
+  // Re-resolve weather condition label when language changes
+  function relabelWeather(lang) {
+    setWeather(prev => {
+      if (!prev || !prev.conditionKey) return prev
+      const wmo = resolveWmo(
+        Object.keys(WMO_CODES).find(k => WMO_CODES[k].labelKey === prev.conditionKey),
+        lang
+      )
+      return { ...prev, condition: wmo.label }
+    })
+  }
+
   function requestLocation() {
-    // Geolocation API überhaupt verfügbar?
     if (!navigator?.geolocation) {
-      setError('Dein Browser unterstützt keine Standortermittlung. Bitte eine Stadt eingeben.')
+      setError(t.weatherNoGeo)
       setLoading(false)
       return
     }
-
-    // Geolocation benötigt HTTPS oder localhost
-    const isSecure = location?.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const isSecure = window.location.protocol === 'https:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
     if (!isSecure) {
-      setError('Standortermittlung benötigt eine sichere Verbindung (HTTPS). Bitte eine Stadt eingeben.')
+      setError(t.weatherNoHttps)
       setLoading(false)
       return
     }
@@ -135,7 +156,7 @@ export function useWeather() {
         const { latitude: lat, longitude: lon } = pos.coords
         try {
           const [weatherData, cityName] = await Promise.all([
-            fetchWeatherData(lat, lon),
+            fetchWeatherData(lat, lon, lang),
             reverseGeocode(lat, lon),
           ])
           setWeather(weatherData)
@@ -151,17 +172,14 @@ export function useWeather() {
         setError(geoErrorMessage(err))
         setLoading(false)
       },
-      {
-        enableHighAccuracy: false, // schneller, reicht für Wetterdata
-        timeout: 10000,            // 10 Sekunden max
-        maximumAge: 5 * 60 * 1000, // gecachter Standort bis 5 Min OK
-      }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 }
     )
   }
 
-  useEffect(() => {
-    requestLocation()
-  }, [])
+  useEffect(() => { requestLocation() }, [])
+
+  // When language switches, re-label the condition string without re-fetching
+  useEffect(() => { relabelWeather(lang) }, [lang])
 
   return { weather, location, loading, error, refetch: requestLocation, fetchByCity }
 }

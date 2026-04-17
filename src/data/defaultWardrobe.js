@@ -53,4 +53,5 @@ export const defaultWardrobe = [
   { id: 'default-22', name: 'Mütze',              category: CATEGORIES.ACCESSORY,isDefault: true, photo: null, tempMin: -20,tempMax: 5,  layer: 3, tags: ['warm'],            gender: 'all' },
   { id: 'default-23', name: 'Handschuhe',         category: CATEGORIES.ACCESSORY,isDefault: true, photo: null, tempMin: -20,tempMax: 2,  layer: 3, tags: ['warm'],            gender: 'all' },
   { id: 'default-24', name: 'Sonnenbrille',       category: CATEGORIES.ACCESSORY,isDefault: true, photo: null, tempMin: 20, tempMax: 40, layer: 3, tags: ['sun'],             gender: 'all' },
+  { id: 'default-27', name: 'Regenschirm',        category: CATEGORIES.ACCESSORY,isDefault: true, photo: null, tempMin: -10,tempMax: 30, layer: 3, tags: ['rain'],  rain: true,  gender: 'all' },
 ]

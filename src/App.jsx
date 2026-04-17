@@ -1,28 +1,52 @@
 import { useState, useMemo } from 'react'
-import { CloudSun, Shirt } from 'lucide-react'
+import { CloudSun, Shirt, LogOut } from 'lucide-react'
 import { useWeather } from './hooks/useWeather'
 import { useWardrobe } from './hooks/useWardrobe'
+import { useSupabaseWardrobe } from './hooks/useSupabaseWardrobe'
 import { useGender } from './hooks/useGender'
 import { useLanguage } from './hooks/useLanguage'
+import { useAuth } from './hooks/useAuth'
 import { matchOutfit } from './utils/outfitMatcher'
 import WeatherCard from './components/WeatherCard'
 import OutfitSuggestion from './components/OutfitSuggestion'
 import WardrobeView from './components/WardrobeView'
 import GenderOnboarding from './components/GenderOnboarding'
+import AuthScreen from './components/AuthScreen'
 
 export default function App() {
   const [tab, setTab] = useState('dashboard')
   const [shuffleIndex, setShuffleIndex] = useState(0)
 
   const { lang, setLang, t } = useLanguage()
+  const { user, loading: authLoading, error: authError, signUp, signIn, signOut } = useAuth()
+
+  // Use Supabase wardrobe if logged in, otherwise use localStorage
+  const supabaseWardrobe = useSupabaseWardrobe(user?.id)
+  const localWardrobe = useWardrobe()
+  const { items, addItem, removeItem } = user ? supabaseWardrobe : localWardrobe
+
   const { weather, location, loading, error, refetch, fetchByCity } = useWeather(lang)
-  const { items, addItem, removeItem } = useWardrobe()
   const { gender, setGender } = useGender()
 
   const outfit = useMemo(() => {
     if (!weather) return []
     return matchOutfit(items, weather, gender ?? 'all', shuffleIndex)
   }, [items, weather, gender, shuffleIndex])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fbf8f3' }}>
+        <div className="text-center">
+          <div className="animate-pulse text-3xl font-serif mb-4" style={{ color: '#2b2f38' }}>DressCast</div>
+          <p style={{ color: '#5b6270' }}>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <AuthScreen onSignUp={signUp} onSignIn={signIn} loading={authLoading} error={authError} />
+  }
 
   if (gender === null) {
     return <GenderOnboarding onSelect={setGender} t={t} />
@@ -45,21 +69,30 @@ export default function App() {
             </h1>
             <p className="text-sm mt-1" style={{ color: '#5b6270' }}>{t.appSubtitle}</p>
           </div>
-          {/* Language Selector */}
-          <div className="flex items-center gap-1 bg-white/70 border border-[#e8dfcc] rounded-full p-1 mt-1 backdrop-blur">
-            {['en', 'de'].map(l => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-                  lang === l
-                    ? 'bg-[#2b2f38] text-white'
-                    : 'text-[#5b6270] hover:text-[#2b2f38]'
-                }`}
-              >
-                {l.toUpperCase()}
-              </button>
-            ))}
+          {/* Language Selector + Sign Out */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-white/70 border border-[#e8dfcc] rounded-full p-1 backdrop-blur">
+              {['en', 'de'].map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                    lang === l
+                      ? 'bg-[#2b2f38] text-white'
+                      : 'text-[#5b6270] hover:text-[#2b2f38]'
+                  }`}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={signOut}
+              className="text-[#5b6270] hover:text-[#ef7a46] transition-colors p-2"
+              title="Sign out"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </header>
 

@@ -15,6 +15,14 @@ export const translations = {
     weatherError: 'Weather data could not be loaded.',
     weatherCityNotFound: (city) => `City "${city}" not found.`,
 
+    // Daily curve
+    sunrise: 'Sunrise',
+    sunset: 'Sunset',
+    spreadLow: (spread) => `${spread}° swing today — dress in layers`,
+    spreadHigh: (spread) => `${spread}° swing today — dress in layers`,
+    layeringHint: 'Big temp swing — pack a removable layer',
+    hourLabel: (h) => `${h}:00`,
+
     // Temp labels
     tempVeryCold: 'Very cold',
     tempCold: 'Cold',
@@ -30,6 +38,7 @@ export const translations = {
     outfitReshuffle: 'Shuffle',
     outfitStandard: 'Default',
     outfitRain: '🌧️ Rain',
+    outfitLayering: 'Can remove',
 
     // Wardrobe
     wardrobeTitle: 'My Wardrobe',
@@ -116,6 +125,14 @@ export const translations = {
     weatherError: 'Wetterdaten konnten nicht geladen werden.',
     weatherCityNotFound: (city) => `Stadt "${city}" nicht gefunden.`,
 
+    // Daily curve
+    sunrise: 'Sonnenaufgang',
+    sunset: 'Sonnenuntergang',
+    spreadLow: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
+    spreadHigh: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
+    layeringHint: 'Große Temperaturschwankung — eine ablegbare Schicht einplanen',
+    hourLabel: (h) => `${h} Uhr`,
+
     tempVeryCold: 'Sehr kalt',
     tempCold: 'Kalt',
     tempCool: 'Kühl',
@@ -129,6 +146,7 @@ export const translations = {
     outfitReshuffle: 'Neu',
     outfitStandard: 'Standard',
     outfitRain: '🌧️ Regen',
+    outfitLayering: 'Ablegbar',
 
     wardrobeTitle: 'Meine Garderobe',
     wardrobeAdd: 'Hinzufügen',

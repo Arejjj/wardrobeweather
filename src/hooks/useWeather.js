@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { translations } from '../i18n/translations'
 
-// WMO code → { icon, rain, labelKey } — label resolved at render time via t()
 const WMO_CODES = {
   0:  { icon: '☀️',  rain: false, labelKey: 'wmo0'  },
   1:  { icon: '🌤️', rain: false, labelKey: 'wmo1'  },
@@ -26,7 +25,6 @@ const WMO_CODES = {
   99: { icon: '⛈️', rain: true,  labelKey: 'wmo99' },
 }
 
-// Open-Meteo benennt das Feld je nach API-Version unterschiedlich
 function extractWeatherCode(current) {
   return current.weather_code ?? current.weathercode ?? 0
 }
@@ -37,30 +35,66 @@ function resolveWmo(code, lang = 'en') {
   return { ...wmo, label: wmo.labelKey ? (t[wmo.labelKey] ?? wmo.labelKey) : 'Unknown' }
 }
 
+// Extract hourly temps for today at display hours: 6,9,12,15,18,21
+function extractHourlyTemps(hourlyData, timezoneOffset) {
+  const displayHours = [6, 9, 12, 15, 18, 21]
+  const times = hourlyData.time        // ISO strings like "2024-04-17T06:00"
+  const temps = hourlyData.temperature_2m
+
+  // Use local date (not UTC) to match the API's timezone=auto times
+  const today = new Date()
+  const todayStr = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-')
+
+  return displayHours.map(h => {
+    const target = `${todayStr}T${String(h).padStart(2, '0')}:00`
+    const idx = times.indexOf(target)
+    return {
+      hour: h,
+      temp: idx >= 0 ? Math.round(temps[idx]) : null,
+    }
+  }).filter(p => p.temp !== null)
+}
+
 async function fetchWeatherData(lat, lon, lang = 'en') {
-  // Beide Feldnamen anfragen für maximale Kompatibilität
   const url = `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}&longitude=${lon}` +
     `&current=temperature_2m,weather_code,weathercode,windspeed_10m` +
-    `&daily=temperature_2m_max,temperature_2m_min,weather_code,weathercode` +
+    `&hourly=temperature_2m` +
+    `&daily=temperature_2m_max,temperature_2m_min,weather_code,weathercode,sunrise,sunset` +
     `&timezone=auto&forecast_days=1`
 
   const res = await fetch(url)
-  if (!res.ok) throw new Error('Wetterdaten konnten nicht geladen werden.')
+  if (!res.ok) throw new Error('Weather data could not be loaded.')
   const data = await res.json()
 
   const code = extractWeatherCode(data.current)
   const wmo  = resolveWmo(code, lang)
 
+  const tempMax = Math.round(data.daily.temperature_2m_max[0])
+  const tempMin = Math.round(data.daily.temperature_2m_min[0])
+  const hourlyTemps = extractHourlyTemps(data.hourly, data.utc_offset_seconds)
+
+  // Peak hour = hour of day with highest temp (approx from hourly)
+  const peakHour = hourlyTemps.reduce((best, p) => p.temp > best.temp ? p : best, hourlyTemps[0] ?? { hour: 14, temp: tempMax })
+
   return {
-    temp:      Math.round(data.current.temperature_2m),
-    tempMax:   Math.round(data.daily.temperature_2m_max[0]),
-    tempMin:   Math.round(data.daily.temperature_2m_min[0]),
-    condition: wmo.label,
+    temp:         Math.round(data.current.temperature_2m),
+    tempMax,
+    tempMin,
+    spread:       tempMax - tempMin,          // Temperaturschwankung des Tages
+    peakHour:     peakHour.hour,              // Tageszeit mit höchster Temperatur
+    hourlyTemps,                              // [{hour, temp}, ...] für Chart
+    condition:    wmo.label,
     conditionKey: wmo.labelKey,
-    icon:      wmo.icon,
-    rain:      wmo.rain,
-    windspeed: Math.round(data.current.windspeed_10m),
+    icon:         wmo.icon,
+    rain:         wmo.rain,
+    windspeed:    Math.round(data.current.windspeed_10m),
+    sunrise:      data.daily.sunrise?.[0]?.slice(11, 16) ?? null,  // "06:42"
+    sunset:       data.daily.sunset?.[0]?.slice(11, 16)  ?? null,  // "20:15"
   }
 }
 
@@ -76,10 +110,10 @@ async function reverseGeocode(lat, lon) {
       data.address?.town ||
       data.address?.village ||
       data.address?.county ||
-      'Dein Standort'
+      'Your location'
     )
   } catch {
-    return 'Dein Standort'
+    return 'Your location'
   }
 }
 
@@ -121,7 +155,6 @@ export function useWeather(lang = 'en') {
     }
   }
 
-  // Re-resolve weather condition label when language changes
   function relabelWeather(lang) {
     setWeather(prev => {
       if (!prev || !prev.conditionKey) return prev
@@ -135,17 +168,13 @@ export function useWeather(lang = 'en') {
 
   function requestLocation() {
     if (!navigator?.geolocation) {
-      setError(t.weatherNoGeo)
-      setLoading(false)
-      return
+      setError(t.weatherNoGeo); setLoading(false); return
     }
     const isSecure = window.location.protocol === 'https:' ||
       window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1'
     if (!isSecure) {
-      setError(t.weatherNoHttps)
-      setLoading(false)
-      return
+      setError(t.weatherNoHttps); setLoading(false); return
     }
 
     setLoading(true)
@@ -168,17 +197,12 @@ export function useWeather(lang = 'en') {
           setLoading(false)
         }
       },
-      (err) => {
-        setError(geoErrorMessage(err))
-        setLoading(false)
-      },
+      (err) => { setError(geoErrorMessage(err)); setLoading(false) },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 }
     )
   }
 
   useEffect(() => { requestLocation() }, [])
-
-  // When language switches, re-label the condition string without re-fetching
   useEffect(() => { relabelWeather(lang) }, [lang])
 
   return { weather, location, loading, error, refetch: requestLocation, fetchByCity }

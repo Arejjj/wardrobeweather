@@ -59,6 +59,9 @@ export default function OutfitSuggestion({ outfit, weather, onReshuffle, t }) {
               {item.rain && (
                 <span className="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">{t.outfitRain}</span>
               )}
+              {item.layeringItem && (
+                <span className="text-xs bg-orange-50 text-orange-500 px-2 py-0.5 rounded-full">🧅 {t.outfitLayering}</span>
+              )}
             </div>
           </div>
         ))}

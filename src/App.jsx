@@ -34,25 +34,27 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: '#fbf8f3' }}>
       <div className="max-w-md mx-auto min-h-screen flex flex-col">
 
         {/* Header */}
-        <header className="px-5 pt-8 pb-4 flex items-start justify-between">
+        <header className="px-5 pt-10 pb-5 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t.appTitle}</h1>
-            <p className="text-sm text-gray-400">{t.appSubtitle}</p>
+            <h1 className="font-serif text-3xl font-semibold tracking-tight" style={{ color: '#2b2f38' }}>
+              {t.appTitle}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: '#5b6270' }}>{t.appSubtitle}</p>
           </div>
           {/* Language Selector */}
-          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 mt-1">
+          <div className="flex items-center gap-1 bg-white/70 border border-[#e8dfcc] rounded-full p-1 mt-1 backdrop-blur">
             {['en', 'de'].map(l => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
                   lang === l
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-400 hover:text-gray-600'
+                    ? 'bg-[#2b2f38] text-white'
+                    : 'text-[#5b6270] hover:text-[#2b2f38]'
                 }`}
               >
                 {l.toUpperCase()}
@@ -93,13 +95,13 @@ export default function App() {
         </main>
 
         {/* Bottom Nav */}
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 px-6 py-3 flex justify-around">
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 backdrop-blur border-t border-[#e8dfcc] px-6 py-3 flex justify-around">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               className={`flex flex-col items-center gap-1 px-4 py-1 rounded-xl transition-colors ${
-                tab === id ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                tab === id ? 'text-[#ef7a46]' : 'text-[#5b6270] hover:text-[#2b2f38]'
               }`}
             >
               <Icon size={22} strokeWidth={tab === id ? 2.5 : 1.8} />

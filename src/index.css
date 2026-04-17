@@ -1,12 +1,37 @@
 @import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+@theme {
+  /* DressCast palette */
+  --color-oatmeal-50:  #fbf8f3;
+  --color-oatmeal-100: #f4eee3;
+  --color-oatmeal-200: #e8dfcc;
+  --color-slate-ink:   #2b2f38;
+  --color-slate-soft:  #5b6270;
+  --color-sunset-300:  #ffb38a;
+  --color-sunset-500:  #ef7a46;
+  --color-sunset-600:  #d6612f;
+  --color-sky-300:     #9ecbe8;
+  --color-sky-500:     #5aa4cf;
+  --color-raincoat-400: #e6c76a;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
 }
 
-body {
+* { box-sizing: border-box; }
+
+html, body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #f8f9fa;
-  color: #1a1a2e;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #fbf8f3;
+  color: #2b2f38;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif,
+h1.brand, .brand {
+  font-family: 'Fraunces', Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
 }

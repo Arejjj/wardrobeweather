@@ -1,8 +1,8 @@
 export const translations = {
   en: {
     // App
-    appTitle: 'WardrobeWeather',
-    appSubtitle: 'What should I wear today?',
+    appTitle: 'DressCast',
+    appSubtitle: 'Dress for the day, not just the weather.',
 
     // Weather
     weatherRetry: 'Retry location',
@@ -18,9 +18,9 @@ export const translations = {
     // Daily curve
     sunrise: 'Sunrise',
     sunset: 'Sunset',
-    spreadLow: (spread) => `${spread}° swing today — dress in layers`,
-    spreadHigh: (spread) => `${spread}° swing today — dress in layers`,
-    layeringHint: 'Big temp swing — pack a removable layer',
+    spreadLow: (spread) => `${spread}° swing today — layer up`,
+    spreadHigh: (spread) => `${spread}° swing today — layer up`,
+    layeringHint: 'Bring a layer you can peel off later',
     hourLabel: (h) => `${h}:00`,
 
     // Temp labels
@@ -32,9 +32,9 @@ export const translations = {
     tempHot: 'Hot',
 
     // Outfit
-    outfitTitle: "Today's Outfit",
-    outfitSubtitle: (temp, condition) => `Based on ${temp}° and ${condition}`,
-    outfitEmpty: 'No matching clothing items found.',
+    outfitTitle: "Today's Look",
+    outfitSubtitle: (temp, condition) => `Picked for ${temp}° and ${String(condition).toLowerCase()}`,
+    outfitEmpty: "Nothing in your wardrobe fits today's weather — try adding a few pieces.",
     outfitReshuffle: 'Shuffle',
     outfitStandard: 'Default',
     outfitRain: '🌧️ Rain',
@@ -112,8 +112,8 @@ export const translations = {
   },
 
   de: {
-    appTitle: 'WardrobeWeather',
-    appSubtitle: 'Was ziehe ich heute an?',
+    appTitle: 'DressCast',
+    appSubtitle: 'Zieh dich für den Tag an — nicht nur fürs Wetter.',
 
     weatherRetry: 'Standort erneut versuchen',
     weatherCityPlaceholder: 'Oder Stadt eingeben…',
@@ -130,7 +130,7 @@ export const translations = {
     sunset: 'Sonnenuntergang',
     spreadLow: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
     spreadHigh: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
-    layeringHint: 'Große Temperaturschwankung — eine ablegbare Schicht einplanen',
+    layeringHint: 'Nimm eine Schicht mit, die du später ablegen kannst',
     hourLabel: (h) => `${h} Uhr`,
 
     tempVeryCold: 'Sehr kalt',
@@ -140,9 +140,9 @@ export const translations = {
     tempWarm: 'Warm',
     tempHot: 'Heiß',
 
-    outfitTitle: 'Outfit für heute',
-    outfitSubtitle: (temp, condition) => `Basierend auf ${temp}° und ${condition}`,
-    outfitEmpty: 'Keine passenden Kleidungsstücke gefunden.',
+    outfitTitle: 'Dein Look für heute',
+    outfitSubtitle: (temp, condition) => `Zusammengestellt für ${temp}° und ${String(condition).toLowerCase()}`,
+    outfitEmpty: 'Dein Schrank hat heute nichts Passendes — füg doch ein paar Teile hinzu.',
     outfitReshuffle: 'Neu',
     outfitStandard: 'Standard',
     outfitRain: '🌧️ Regen',

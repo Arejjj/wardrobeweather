@@ -13,6 +13,8 @@ const CATEGORY_ICONS = {
   'Accessoire': '🧤',         'Accessory': '🧤',
 }
 
+const INPUT_CLS = "w-full rounded-xl border border-[#e8dfcc] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ef7a46]/40 focus:border-[#ef7a46]"
+
 function AddItemForm({ onAdd, onCancel, t }) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState(CATEGORIES.TOP)
@@ -36,59 +38,54 @@ function AddItemForm({ onAdd, onCancel, t }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
-      <h3 className="font-semibold text-gray-700 mb-4">{t.formTitle}</h3>
+    <form onSubmit={handleSubmit} className="bg-[#f4eee3] rounded-2xl p-5 border border-[#e8dfcc]">
+      <h3 className="font-serif text-lg font-semibold mb-4" style={{ color: '#2b2f38' }}>{t.formTitle}</h3>
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="col-span-2">
-          <label className="text-xs text-gray-500 mb-1 block">{t.formName}</label>
+          <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formName}</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder={t.formNamePlaceholder}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className={INPUT_CLS}
             autoFocus
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">{t.formCategory}</label>
-          <select
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          >
+          <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formCategory}</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={INPUT_CLS}>
             {Object.values(CATEGORIES).map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">{t.formPhoto}</label>
+          <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formPhoto}</label>
           <button
             type="button"
             onClick={() => fileRef.current.click()}
-            className="w-full rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors"
+            className="w-full rounded-xl border border-dashed border-[#e8dfcc] bg-white px-3 py-2 text-sm transition-colors hover:border-[#ef7a46]"
+            style={{ color: photo ? '#2b2f38' : '#5b6270' }}
           >
             {photo ? t.formPhotoChosen : t.formPhotoUpload}
           </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">{t.formTempMin}</label>
-          <input type="number" value={tempMin} onChange={e => setTempMin(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+          <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formTempMin}</label>
+          <input type="number" value={tempMin} onChange={e => setTempMin(e.target.value)} className={INPUT_CLS} />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">{t.formTempMax}</label>
-          <input type="number" value={tempMax} onChange={e => setTempMax(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+          <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formTempMax}</label>
+          <input type="number" value={tempMax} onChange={e => setTempMax(e.target.value)} className={INPUT_CLS} />
         </div>
       </div>
       {photo && <img src={photo} alt="Preview" className="w-20 h-20 rounded-xl object-cover mb-3" />}
       <div className="flex gap-2">
-        <button type="submit" className="flex items-center gap-1.5 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+        <button type="submit" className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors">
           <Check size={15} /> {t.formAdd}
         </button>
-        <button type="button" onClick={onCancel} className="flex items-center gap-1.5 bg-white text-gray-500 px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-gray-50 transition-colors">
+        <button type="button" onClick={onCancel} className="flex items-center gap-1.5 bg-white px-4 py-2 rounded-full text-sm border border-[#e8dfcc] hover:bg-[#fbf8f3] transition-colors" style={{ color: '#5b6270' }}>
           <X size={15} /> {t.formCancel}
         </button>
       </div>
@@ -128,7 +125,6 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
   const filtered = items.filter(item => {
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false
     if (!matchesWeatherFilter(item)) return false
-    // Temp range: item must overlap with selected range
     if (item.tempMax < tempRange.min || item.tempMin > tempRange.max) return false
     return true
   })
@@ -149,23 +145,23 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-800 text-lg">{t.wardrobeTitle}</h2>
+        <h2 className="font-serif text-2xl font-semibold" style={{ color: '#2b2f38', letterSpacing: '-0.01em' }}>{t.wardrobeTitle}</h2>
         <div className="flex gap-2">
           <button
             onClick={() => setShowFilters(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors border ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-colors border ${
               showFilters || hasActiveFilters
-                ? 'bg-blue-50 border-blue-200 text-blue-600'
-                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                ? 'bg-[#fdeadd] border-[#ffb38a] text-[#d6612f]'
+                : 'bg-white border-[#e8dfcc] text-[#5b6270] hover:bg-[#fbf8f3]'
             }`}
           >
             <SlidersHorizontal size={15} />
             {t.filterTitle}
-            {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-blue-500 ml-0.5" />}
+            {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-[#ef7a46] ml-0.5" />}
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 bg-gray-800 text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1.5 bg-[#2b2f38] text-white px-3 py-2 rounded-full text-sm font-medium hover:bg-black transition-colors"
           >
             <Plus size={15} /> {t.wardrobeAdd}
           </button>
@@ -174,10 +170,9 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-4">
-          {/* Weather filter */}
+        <div className="bg-white rounded-2xl border border-[#e8dfcc] p-4 space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">
+            <label className="text-xs font-semibold uppercase tracking-wider mb-2 block" style={{ color: '#5b6270' }}>
               {t.filterWeather}
             </label>
             <div className="flex flex-wrap gap-2">
@@ -187,8 +182,8 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
                   onClick={() => setWeatherFilter(wf)}
                   className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
                     weatherFilter === wf
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      ? 'bg-[#ef7a46] text-white'
+                      : 'bg-[#fbf8f3] text-[#5b6270] border border-[#e8dfcc] hover:bg-[#f4eee3]'
                   }`}
                 >
                   {weatherFilterLabels[wf]}
@@ -197,9 +192,8 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
             </div>
           </div>
 
-          {/* Temp range */}
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">
+            <label className="text-xs font-semibold uppercase tracking-wider mb-2 block" style={{ color: '#5b6270' }}>
               {t.filterTempLabel}: {tempRange.min}° – {tempRange.max}°
             </label>
             <div className="flex gap-3 items-center">
@@ -207,19 +201,19 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
                 type="range" min={-20} max={40} step={1}
                 value={tempRange.min}
                 onChange={e => setTempRange(prev => ({ ...prev, min: Math.min(Number(e.target.value), prev.max - 1) }))}
-                className="flex-1 accent-blue-500"
+                className="flex-1 accent-[#ef7a46]"
               />
               <input
                 type="range" min={-20} max={40} step={1}
                 value={tempRange.max}
                 onChange={e => setTempRange(prev => ({ ...prev, max: Math.max(Number(e.target.value), prev.min + 1) }))}
-                className="flex-1 accent-blue-500"
+                className="flex-1 accent-[#ef7a46]"
               />
             </div>
           </div>
 
           {hasActiveFilters && (
-            <button onClick={resetFilters} className="text-xs text-red-400 hover:text-red-600 underline">
+            <button onClick={resetFilters} className="text-xs underline hover:text-[#d6612f]" style={{ color: '#ef7a46' }}>
               {t.filterReset}
             </button>
           )}
@@ -234,8 +228,8 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
             onClick={() => setCategoryFilter(cat)}
             className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
               categoryFilter === cat
-                ? 'bg-gray-800 text-white'
-                : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-[#2b2f38] text-white'
+                : 'bg-white text-[#5b6270] border border-[#e8dfcc] hover:bg-[#fbf8f3]'
             }`}
           >
             {CATEGORY_ICONS[cat] && `${CATEGORY_ICONS[cat]} `}{cat === 'all' ? t.filterAll : cat}
@@ -248,25 +242,25 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
       {/* Grid */}
       <div className="grid grid-cols-2 gap-3">
         {filtered.map(item => (
-          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
+          <div key={item.id} className="bg-white rounded-2xl border border-[#e8dfcc] overflow-hidden group">
             {item.photo ? (
               <img src={item.photo} alt={item.name} className="w-full h-32 object-cover" />
             ) : (
-              <div className="w-full h-32 bg-gray-50 flex items-center justify-center text-4xl">
+              <div className="w-full h-32 bg-[#fbf8f3] flex items-center justify-center text-4xl">
                 {CATEGORY_ICONS[item.category] ?? '👔'}
               </div>
             )}
             <div className="p-3">
-              <p className="font-medium text-gray-800 text-sm truncate">{item.name}</p>
-              <p className="text-xs text-gray-400">{item.tempMin}° – {item.tempMax}°</p>
+              <p className="font-medium text-sm truncate" style={{ color: '#2b2f38' }}>{item.name}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#5b6270' }}>{item.tempMin}° – {item.tempMax}°</p>
               <div className="flex items-center justify-between mt-2">
                 {item.isDefault
-                  ? <span className="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">{t.wardrobeDefault}</span>
-                  : <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">{t.wardrobeCustom}</span>
+                  ? <span className="text-xs px-2 py-0.5 rounded-full bg-[#fbf8f3] border border-[#e8dfcc]" style={{ color: '#5b6270' }}>{t.wardrobeDefault}</span>
+                  : <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#fdeadd', color: '#d6612f' }}>{t.wardrobeCustom}</span>
                 }
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="text-gray-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                  className="text-[#e8dfcc] hover:text-[#d6612f] transition-colors opacity-0 group-hover:opacity-100"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -277,7 +271,7 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-10 text-gray-400 text-sm">{t.wardrobeEmpty}</div>
+        <div className="text-center py-10 text-sm" style={{ color: '#5b6270' }}>{t.wardrobeEmpty}</div>
       )}
     </div>
   )

@@ -5,10 +5,15 @@ import TempCurve from './TempCurve'
 
 export default function WeatherCard({ weather, location, loading, error, onRefetch, onCitySearch, t }) {
   const [cityInput, setCityInput] = useState('')
+  const [editingLocation, setEditingLocation] = useState(false)
 
   function handleCitySubmit(e) {
     e.preventDefault()
-    if (cityInput.trim()) onCitySearch(cityInput.trim())
+    if (cityInput.trim()) {
+      onCitySearch(cityInput.trim())
+      setCityInput('')
+      setEditingLocation(false)
+    }
   }
 
   if (loading) {
@@ -50,39 +55,63 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
   const showLayeringHint = weather.spread >= 10
 
   return (
-    <div className={`${bg} rounded-2xl p-5 border border-gray-100`}>
-      {/* Top row: location + refresh */}
+    <div className="rounded-3xl p-6 border border-[#e8dfcc] bg-white shadow-[0_1px_2px_rgba(43,47,56,0.04)]">
+      {/* Top row: location + actions */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-gray-500 font-medium">{location}</p>
-        <button onClick={onRefetch} className="text-gray-400 hover:text-gray-600 transition-colors p-1" title="Refresh">
+        <button
+          onClick={() => setEditingLocation(v => !v)}
+          className="flex items-center gap-1.5 text-sm font-medium tracking-wide uppercase hover:text-[#ef7a46] transition-colors group"
+          style={{ color: '#5b6270', letterSpacing: '0.08em' }}
+        >
+          {location}
+          <Search size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#ef7a46' }} />
+        </button>
+        <button onClick={onRefetch} className="text-[#5b6270] hover:text-[#2b2f38] transition-colors p-1" title="Refresh">
           <RefreshCw size={15} />
         </button>
       </div>
 
+      {/* Inline location search */}
+      {editingLocation && (
+        <form onSubmit={handleCitySubmit} className="flex gap-2 mb-4">
+          <input
+            value={cityInput}
+            onChange={e => setCityInput(e.target.value)}
+            placeholder={t.weatherCityPlaceholder}
+            autoFocus
+            className="flex-1 rounded-full border border-[#e8dfcc] bg-[#fbf8f3] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ef7a46]/40 focus:border-[#ef7a46]"
+            style={{ color: '#2b2f38' }}
+          />
+          <button type="submit" className="bg-[#ef7a46] text-white px-3 py-2 rounded-full hover:bg-[#d6612f] transition-colors">
+            <Search size={15} />
+          </button>
+        </form>
+      )}
+
       {/* Main temp + condition */}
-      <div className="flex items-end gap-3 mb-2">
-        <span className="text-5xl">{weather.icon}</span>
+      <div className="flex items-end gap-4 mb-3">
+        <span className="text-6xl">{weather.icon}</span>
         <div>
-          <span className="text-5xl font-bold text-gray-800 leading-none">{weather.temp}°</span>
-          <p className="text-gray-500 text-sm mt-0.5">{weather.condition}</p>
+          <span className="font-serif text-6xl font-semibold leading-none" style={{ color: '#2b2f38', letterSpacing: '-0.03em' }}>{weather.temp}°</span>
+          <p className="font-serif italic text-base mt-1" style={{ color: '#5b6270' }}>{weather.condition}</p>
         </div>
       </div>
 
       {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full bg-white/70 ${color}`}>
+      <div className="flex flex-wrap gap-2 mb-4">
+        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#fbf8f3] border border-[#e8dfcc]" style={{ color: '#2b2f38' }}>
           {label}
         </span>
-        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/70 text-gray-500">
+        <span className="text-xs font-medium px-3 py-1 rounded-full bg-[#fbf8f3] border border-[#e8dfcc]" style={{ color: '#5b6270' }}>
           ↓{weather.tempMin}° ↑{weather.tempMax}°
         </span>
         {weather.rain && (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-600">
+          <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: '#e6f0f8', color: '#5aa4cf' }}>
             {t.outfitRain}
           </span>
         )}
         {showLayeringHint && (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">
+          <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: '#fdeadd', color: '#d6612f' }}>
             🧅 {t.layeringHint}
           </span>
         )}
@@ -90,7 +119,7 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
 
       {/* Temperature curve */}
       {weather.hourlyTemps?.length >= 2 && (
-        <div className="bg-white/60 rounded-xl px-3 pt-2 pb-1">
+        <div className="bg-[#fbf8f3] rounded-2xl px-3 pt-2 pb-1 border border-[#e8dfcc]">
           <TempCurve
             hourlyTemps={weather.hourlyTemps}
             currentHour={new Date().getHours()}
@@ -101,16 +130,16 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
 
       {/* Sunrise / Sunset */}
       {(weather.sunrise || weather.sunset) && (
-        <div className="flex gap-4 mt-2 pt-2 border-t border-white/40">
+        <div className="flex gap-4 mt-3 pt-3 border-t border-[#e8dfcc]">
           {weather.sunrise && (
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Sunrise size={12} className="text-amber-400" />
+            <span className="flex items-center gap-1.5 text-xs" style={{ color: '#5b6270' }}>
+              <Sunrise size={13} style={{ color: '#e6c76a' }} />
               {weather.sunrise}
             </span>
           )}
           {weather.sunset && (
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Sunset size={12} className="text-orange-400" />
+            <span className="flex items-center gap-1.5 text-xs" style={{ color: '#5b6270' }}>
+              <Sunset size={13} style={{ color: '#ef7a46' }} />
               {weather.sunset}
             </span>
           )}

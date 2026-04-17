@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { seedDefaultWardrobeIfNeeded } from '../lib/seedDefaultWardrobe'
 
 export function useAuth() {
   const [user, setUser] = useState(null)
@@ -28,6 +29,10 @@ export function useAuth() {
       setError(err.message)
       return null
     }
+    // Seed default wardrobe for new user
+    if (data.user) {
+      await seedDefaultWardrobeIfNeeded(data.user.id)
+    }
     return data.user
   }
 
@@ -38,7 +43,11 @@ export function useAuth() {
       setError(err.message)
       return null
     }
-    setUser(data.user)
+    if (data.user) {
+      setUser(data.user)
+      // Ensure user has default wardrobe (in case they signed up elsewhere)
+      await seedDefaultWardrobeIfNeeded(data.user.id)
+    }
     return data.user
   }
 

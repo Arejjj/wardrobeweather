@@ -60,11 +60,11 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={() => setEditingLocation(v => !v)}
-          className="flex items-center gap-1.5 text-sm font-medium tracking-wide uppercase hover:text-[#ef7a46] transition-colors group"
+          className="flex items-center gap-1.5 text-sm font-medium tracking-wide uppercase hover:text-[#ef7a46] transition-colors"
           style={{ color: '#5b6270', letterSpacing: '0.08em' }}
         >
           {location}
-          <Search size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#ef7a46' }} />
+          <Search size={12} style={{ color: '#ef7a46' }} />
         </button>
         <button onClick={onRefetch} className="text-[#5b6270] hover:text-[#2b2f38] transition-colors p-1" title="Refresh">
           <RefreshCw size={15} />

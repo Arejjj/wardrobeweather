@@ -14,7 +14,7 @@
   --color-sky-500:     #5aa4cf;
   --color-raincoat-400: #e6c76a;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   --font-serif: 'Fraunces', Georgia, serif;
 }
 
@@ -22,7 +22,7 @@
 
 html, body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   background: #fbf8f3;
   color: #2b2f38;
   -webkit-font-smoothing: antialiased;

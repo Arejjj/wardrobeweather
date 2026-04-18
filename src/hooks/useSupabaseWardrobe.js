@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
+// Map DB snake_case → app camelCase
+function toClient(item) {
+  return {
+    ...item,
+    tempMin:   item.temp_min,
+    tempMax:   item.temp_max,
+    isDefault: item.is_default,
+  }
+}
+
 export function useSupabaseWardrobe(userId) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(!userId)
@@ -26,7 +36,7 @@ export function useSupabaseWardrobe(userId) {
       if (err) {
         setError(err.message)
       } else {
-        setItems(data ?? [])
+        setItems((data ?? []).map(toClient))
       }
       setLoading(false)
     }
@@ -44,13 +54,14 @@ export function useSupabaseWardrobe(userId) {
             setItems(prev => prev.filter(i => i.id !== payload.old.id))
           } else {
             setItems(prev => {
-              const idx = prev.findIndex(i => i.id === payload.new.id)
+              const item = toClient(payload.new)
+              const idx = prev.findIndex(i => i.id === item.id)
               if (idx >= 0) {
                 const newItems = [...prev]
-                newItems[idx] = payload.new
+                newItems[idx] = item
                 return newItems
               }
-              return [payload.new, ...prev]
+              return [item, ...prev]
             })
           }
         }

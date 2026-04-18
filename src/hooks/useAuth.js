@@ -9,8 +9,10 @@ export function useAuth() {
 
   useEffect(() => {
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const u = session?.user ?? null
+      setUser(u)
+      if (u) await seedDefaultWardrobeIfNeeded(u.id)
       setLoading(false)
     })
 

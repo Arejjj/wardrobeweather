@@ -7,6 +7,7 @@ import { useGender } from './hooks/useGender'
 import { useLanguage } from './hooks/useLanguage'
 import { useAuth } from './hooks/useAuth'
 import { matchOutfit } from './utils/outfitMatcher'
+import { supabaseConfigError } from './lib/supabase'
 import WeatherCard from './components/WeatherCard'
 import OutfitSuggestion from './components/OutfitSuggestion'
 import WardrobeView from './components/WardrobeView'
@@ -32,6 +33,20 @@ export default function App() {
     if (!weather) return []
     return matchOutfit(items, weather, gender ?? 'all', shuffleIndex)
   }, [items, weather, gender, shuffleIndex])
+
+  if (supabaseConfigError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#fbf8f3' }}>
+        <div className="max-w-sm w-full text-center space-y-4">
+          <div className="text-4xl">⚙️</div>
+          <h2 className="font-serif text-xl font-semibold" style={{ color: '#2b2f38' }}>Configuration required</h2>
+          <p className="text-sm rounded-xl p-4 bg-amber-50 border border-amber-200 text-left" style={{ color: '#92400e' }}>
+            {supabaseConfigError}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (authLoading) {
     return (
@@ -89,7 +104,7 @@ export default function App() {
             <button
               onClick={signOut}
               className="text-[#5b6270] hover:text-[#ef7a46] transition-colors p-2"
-              title="Sign out"
+              aria-label={t.ariaSignOut}
             >
               <LogOut size={18} />
             </button>

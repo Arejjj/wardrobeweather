@@ -13,7 +13,7 @@ function toClient(item) {
 
 export function useSupabaseWardrobe(userId) {
   const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(!userId)
+  const [loading, setLoading] = useState(!!userId)
   const [error, setError] = useState(null)
 
   // Fetch items for current user
@@ -78,9 +78,16 @@ export function useSupabaseWardrobe(userId) {
     const { data, error: err } = await supabase
       .from('wardrobe_items')
       .insert([{
-        ...item,
-        user_id: userId,
+        user_id:    userId,
+        name:       item.name,
+        category:   item.category,
+        temp_min:   item.tempMin,
+        temp_max:   item.tempMax,
+        rain:       item.rain ?? false,
         is_default: item.isDefault ?? false,
+        photo:      item.photo ?? null,
+        gender:     item.gender ?? 'all',
+        tags:       item.tags ?? [],
       }])
       .select()
 

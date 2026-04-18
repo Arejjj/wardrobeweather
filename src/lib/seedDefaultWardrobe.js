@@ -26,14 +26,16 @@ export async function seedDefaultWardrobeIfNeeded(userId) {
 
   // Map defaultWardrobe to database format
   const itemsToInsert = defaultWardrobe.map(item => ({
-    user_id: userId,
-    name: item.name,
-    category: item.category,
-    temp_min: item.tempMin,
-    temp_max: item.tempMax,
-    rain: item.rain ?? false,
+    user_id:    userId,
+    name:       item.name,
+    category:   item.category,
+    temp_min:   item.tempMin,
+    temp_max:   item.tempMax,
+    rain:       item.rain ?? false,
     is_default: true,
-    photo: item.photo,
+    photo:      item.photo,
+    gender:     item.gender ?? 'all',
+    tags:       item.tags ?? [],
   }))
 
   // Insert all default items

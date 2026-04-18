@@ -26,7 +26,7 @@ export function useWardrobe() {
   }, [items])
 
   function addItem(item) {
-    const newItem = { ...item, id: `custom-${Date.now()}`, isDefault: false }
+    const newItem = { ...item, id: `custom-${crypto.randomUUID()}`, isDefault: false }
     setItems(prev => [...prev, newItem])
   }
 

@@ -41,7 +41,7 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
             placeholder={t.weatherCityPlaceholder}
             className="flex-1 rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
           />
-          <button type="submit" className="bg-amber-500 text-white px-3 py-2 rounded-xl hover:bg-amber-600 transition-colors">
+          <button type="submit" className="bg-amber-500 text-white px-3 py-2 rounded-xl hover:bg-amber-600 transition-colors" aria-label={t.ariaSearchCity}>
             <Search size={16} />
           </button>
         </form>
@@ -62,11 +62,12 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
           onClick={() => setEditingLocation(v => !v)}
           className="flex items-center gap-1.5 text-sm font-medium tracking-wide uppercase hover:text-[#ef7a46] transition-colors"
           style={{ color: '#5b6270', letterSpacing: '0.08em' }}
+          aria-label={t.ariaChangeLocation}
         >
           {location}
           <Search size={12} style={{ color: '#ef7a46' }} />
         </button>
-        <button onClick={onRefetch} className="text-[#5b6270] hover:text-[#2b2f38] transition-colors p-1" title="Refresh">
+        <button onClick={onRefetch} className="text-[#5b6270] hover:text-[#2b2f38] transition-colors p-1" aria-label={t.ariaRefreshWeather}>
           <RefreshCw size={15} />
         </button>
       </div>
@@ -82,7 +83,7 @@ export default function WeatherCard({ weather, location, loading, error, onRefet
             className="flex-1 rounded-full border border-[#e8dfcc] bg-[#fbf8f3] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ef7a46]/40 focus:border-[#ef7a46]"
             style={{ color: '#2b2f38' }}
           />
-          <button type="submit" className="bg-[#ef7a46] text-white px-3 py-2 rounded-full hover:bg-[#d6612f] transition-colors">
+          <button type="submit" className="bg-[#ef7a46] text-white px-3 py-2 rounded-full hover:bg-[#d6612f] transition-colors" aria-label={t.ariaSearchCity}>
             <Search size={15} />
           </button>
         </form>

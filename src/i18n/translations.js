@@ -21,7 +21,7 @@ export const translations = {
     spreadLow: (spread) => `${spread}° swing today — layer up`,
     spreadHigh: (spread) => `${spread}° swing today — layer up`,
     layeringHint: 'Bring a layer you can peel off later',
-    hourLabel: (h) => `${h}:00`,
+    hourLabel: (h) => h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`,
 
     // Temp labels
     tempVeryCold: 'Very cold',
@@ -69,6 +69,8 @@ export const translations = {
     formPhotoUpload: '📷 Upload',
     formTempMin: 'Min. temperature (°C)',
     formTempMax: 'Max. temperature (°C)',
+    formTempError: 'Min. temperature must be lower than max. temperature.',
+    formPhotoTooLarge: 'Photo must be under 5 MB.',
     formAdd: 'Add',
     formCancel: 'Cancel',
 
@@ -82,6 +84,25 @@ export const translations = {
     onboardingAll: 'All Styles',
     onboardingAllDesc: 'Show me everything, regardless of category',
     onboardingNote: 'You can change this anytime in settings.',
+
+    // Category labels (DB values are German; these map them to display labels)
+    categoryLabels: {
+      'Oberteil':            'Top',
+      'Pullover/Sweatshirt': 'Sweater',
+      'Hose/Rock':           'Trousers/Skirt',
+      'Kleid':               'Dress',
+      'Jacke/Mantel':        'Jacket/Coat',
+      'Thermolayer':         'Base layer',
+      'Schuhe':              'Shoes',
+      'Accessoire':          'Accessory',
+    },
+
+    // Accessibility labels
+    ariaSignOut:       'Sign out',
+    ariaRefreshWeather:'Refresh weather',
+    ariaSearchCity:    'Search for city',
+    ariaRemoveItem:    'Remove item',
+    ariaChangeLocation:'Change location',
 
     // Nav
     navToday: 'Today',
@@ -131,7 +152,7 @@ export const translations = {
     spreadLow: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
     spreadHigh: (spread) => `${spread}° Unterschied heute — in Schichten kleiden`,
     layeringHint: 'Nimm eine Schicht mit, die du später ablegen kannst',
-    hourLabel: (h) => `${h} Uhr`,
+    hourLabel: (h) => `${String(h).padStart(2, '0')}:00`,
 
     tempVeryCold: 'Sehr kalt',
     tempCold: 'Kalt',
@@ -174,6 +195,8 @@ export const translations = {
     formPhotoUpload: '📷 Hochladen',
     formTempMin: 'Min. Temperatur (°C)',
     formTempMax: 'Max. Temperatur (°C)',
+    formTempError: 'Mindesttemperatur muss kleiner als Höchsttemperatur sein.',
+    formPhotoTooLarge: 'Foto muss kleiner als 5 MB sein.',
     formAdd: 'Hinzufügen',
     formCancel: 'Abbrechen',
 
@@ -186,6 +209,25 @@ export const translations = {
     onboardingAll: 'Alle Styles',
     onboardingAllDesc: 'Zeig mir alles, egal welche Kategorie',
     onboardingNote: 'Du kannst das jederzeit in den Einstellungen ändern.',
+
+    // Category labels (DB values are German; identity mapping for DE)
+    categoryLabels: {
+      'Oberteil':            'Oberteil',
+      'Pullover/Sweatshirt': 'Pullover/Sweatshirt',
+      'Hose/Rock':           'Hose/Rock',
+      'Kleid':               'Kleid',
+      'Jacke/Mantel':        'Jacke/Mantel',
+      'Thermolayer':         'Thermolayer',
+      'Schuhe':              'Schuhe',
+      'Accessoire':          'Accessoire',
+    },
+
+    // Accessibility labels
+    ariaSignOut:       'Abmelden',
+    ariaRefreshWeather:'Wetter aktualisieren',
+    ariaSearchCity:    'Stadt suchen',
+    ariaRemoveItem:    'Kleidungsstück entfernen',
+    ariaChangeLocation:'Standort ändern',
 
     navToday: 'Heute',
     navWardrobe: 'Garderobe',

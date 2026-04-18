@@ -98,11 +98,14 @@ async function fetchWeatherData(lat, lon, lang = 'en') {
   }
 }
 
-async function reverseGeocode(lat, lon) {
+async function reverseGeocode(lat, lon, lang = 'en') {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-      { headers: { 'Accept-Language': 'de' } }
+      { headers: {
+        'Accept-Language': lang,
+        'User-Agent': 'DressCast/1.0 (https://github.com/wardrobeweather)',
+      }}
     )
     const data = await res.json()
     return (
@@ -186,7 +189,7 @@ export function useWeather(lang = 'en') {
         try {
           const [weatherData, cityName] = await Promise.all([
             fetchWeatherData(lat, lon, lang),
-            reverseGeocode(lat, lon),
+            reverseGeocode(lat, lon, lang),
           ])
           setWeather(weatherData)
           setLocation(cityName)

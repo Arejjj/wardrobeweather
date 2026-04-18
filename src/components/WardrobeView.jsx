@@ -21,11 +21,18 @@ function AddItemForm({ onAdd, onCancel, t }) {
   const [tempMin, setTempMin] = useState(10)
   const [tempMax, setTempMax] = useState(25)
   const [photo, setPhoto] = useState(null)
+  const [formError, setFormError] = useState(null)
   const fileRef = useRef()
 
   function handlePhoto(e) {
     const file = e.target.files[0]
     if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError(t.formPhotoTooLarge)
+      e.target.value = ''
+      return
+    }
+    setFormError(null)
     const reader = new FileReader()
     reader.onload = (ev) => setPhoto(ev.target.result)
     reader.readAsDataURL(file)
@@ -34,7 +41,14 @@ function AddItemForm({ onAdd, onCancel, t }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (!name.trim()) return
-    onAdd({ name: name.trim(), category, tempMin: Number(tempMin), tempMax: Number(tempMax), photo, layer: 1, tags: [], gender: 'all' })
+    const min = Number(tempMin)
+    const max = Number(tempMax)
+    if (min >= max) {
+      setFormError(t.formTempError)
+      return
+    }
+    setFormError(null)
+    onAdd({ name: name.trim(), category, tempMin: min, tempMax: max, photo, layer: 1, tags: [], gender: 'all' })
   }
 
   return (
@@ -55,7 +69,7 @@ function AddItemForm({ onAdd, onCancel, t }) {
           <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formCategory}</label>
           <select value={category} onChange={e => setCategory(e.target.value)} className={INPUT_CLS}>
             {Object.values(CATEGORIES).map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>{t.categoryLabels?.[cat] ?? cat}</option>
             ))}
           </select>
         </div>
@@ -81,6 +95,9 @@ function AddItemForm({ onAdd, onCancel, t }) {
         </div>
       </div>
       {photo && <img src={photo} alt="Preview" className="w-20 h-20 rounded-xl object-cover mb-3" />}
+      {formError && (
+        <p className="text-sm rounded-lg p-3 mb-2 bg-[#fdeadd]" style={{ color: '#d6612f' }}>{formError}</p>
+      )}
       <div className="flex gap-2">
         <button type="submit" className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors">
           <Check size={15} /> {t.formAdd}
@@ -232,7 +249,7 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
                 : 'bg-white text-[#5b6270] border border-[#e8dfcc] hover:bg-[#fbf8f3]'
             }`}
           >
-            {CATEGORY_ICONS[cat] && `${CATEGORY_ICONS[cat]} `}{cat === 'all' ? t.filterAll : cat}
+            {CATEGORY_ICONS[cat] && `${CATEGORY_ICONS[cat]} `}{cat === 'all' ? t.filterAll : (t.categoryLabels?.[cat] ?? cat)}
           </button>
         ))}
       </div>
@@ -261,6 +278,7 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
                 <button
                   onClick={() => onRemove(item.id)}
                   className="text-[#e8dfcc] hover:text-[#d6612f] transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label={t.ariaRemoveItem}
                 >
                   <Trash2 size={14} />
                 </button>

@@ -102,6 +102,7 @@ export function useSupabaseWardrobe(userId) {
   }
 
   async function removeItem(itemId) {
+    setItems(prev => prev.filter(i => i.id !== itemId))
     const { error: err } = await supabase
       .from('wardrobe_items')
       .delete()
@@ -110,6 +111,9 @@ export function useSupabaseWardrobe(userId) {
 
     if (err) {
       setError(err.message)
+      // Restore item on failure by re-fetching
+      const { data } = await supabase.from('wardrobe_items').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+      if (data) setItems(data.map(toClient))
       return false
     }
     return true

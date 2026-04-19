@@ -12,9 +12,9 @@ const CATEGORY_LIST = [
   'Accessoire',
 ]
 
-const PROMPT = `You are a clothing recognition assistant. Analyse this image and return a JSON object describing the clothing item.
+const PROMPT = `You are a clothing recognition assistant. Analyse this image and return a JSON array of ALL clothing items visible.
 
-Rules:
+Rules for each item:
 - "name": a short, specific English name (e.g. "Navy Denim Jacket", "White Linen Shirt")
 - "category": must be EXACTLY one of: ${CATEGORY_LIST.join(', ')}
 - "color": main color(s) in plain English (e.g. "Navy Blue", "Black & White Stripe")
@@ -23,8 +23,22 @@ Rules:
 - "rain": true if the item is rain-appropriate (waterproof/water-resistant), false otherwise
 - "gender": "all", "male", or "female"
 
-Return ONLY valid JSON, no markdown, no explanation. Example:
-{"name":"Navy Denim Jacket","category":"Jacke/Mantel","color":"Navy Blue","tempMin":8,"tempMax":18,"rain":false,"gender":"all"}`
+If there is only one clothing item, still return a single-element array.
+Return ONLY valid JSON array, no markdown, no explanation. Example:
+[{"name":"Navy Denim Jacket","category":"Jacke/Mantel","color":"Navy Blue","tempMin":8,"tempMax":18,"rain":false,"gender":"all"},{"name":"White T-Shirt","category":"Oberteil","color":"White","tempMin":15,"tempMax":35,"rain":false,"gender":"all"}]`
+
+function parseItem(parsed) {
+  if (!CATEGORY_LIST.includes(parsed.category)) parsed.category = 'Oberteil'
+  return {
+    name:     parsed.name     ?? '',
+    category: parsed.category,
+    color:    parsed.color    ?? '',
+    tempMin:  Number(parsed.tempMin ?? 10),
+    tempMax:  Number(parsed.tempMax ?? 25),
+    rain:     Boolean(parsed.rain),
+    gender:   ['all', 'male', 'female'].includes(parsed.gender) ? parsed.gender : 'all',
+  }
+}
 
 export async function analyzeClothing(base64Image, mimeType = 'image/jpeg') {
   if (!GEMINI_API_KEY) throw new Error('VITE_GEMINI_API_KEY is not set in .env.local')
@@ -56,19 +70,6 @@ export async function analyzeClothing(base64Image, mimeType = 'image/jpeg') {
   if (!text) throw new Error('No response from Gemini')
 
   const parsed = JSON.parse(text)
-
-  // Validate category falls back gracefully
-  if (!CATEGORY_LIST.includes(parsed.category)) {
-    parsed.category = 'Oberteil'
-  }
-
-  return {
-    name:     parsed.name     ?? '',
-    category: parsed.category,
-    color:    parsed.color    ?? '',
-    tempMin:  Number(parsed.tempMin ?? 10),
-    tempMax:  Number(parsed.tempMax ?? 25),
-    rain:     Boolean(parsed.rain),
-    gender:   ['all', 'male', 'female'].includes(parsed.gender) ? parsed.gender : 'all',
-  }
+  const items = Array.isArray(parsed) ? parsed : [parsed]
+  return items.map(parseItem)
 }

@@ -16,7 +16,7 @@ const CATEGORY_ICONS = {
 
 const INPUT_CLS = "w-full rounded-xl border border-[#e8dfcc] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ef7a46]/40 focus:border-[#ef7a46]"
 
-function AddItemForm({ onAdd, onCancel, t }) {
+function AddItemForm({ onAdd, onDone, onCancel, t }) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState(CATEGORIES.TOP)
   const [color, setColor] = useState('')
@@ -28,8 +28,20 @@ function AddItemForm({ onAdd, onCancel, t }) {
   const [submitting, setSubmitting] = useState(false)
   const [scanError, setScanError] = useState(null)
   const [formError, setFormError] = useState(null)
+  // Multi-item picker state
+  const [scanResults, setScanResults] = useState(null)   // array of items from AI, or null
+  const [selected, setSelected] = useState(new Set())    // indices of checked items
   const scanRef = useRef()
   const uploadRef = useRef()
+
+  function prefillForm(item) {
+    setName(item.name)
+    setCategory(item.category)
+    setColor(item.color)
+    setTempMin(item.tempMin)
+    setTempMax(item.tempMax)
+    setGender(item.gender)
+  }
 
   async function handleScan(e) {
     const file = e.target.files[0]
@@ -38,24 +50,23 @@ function AddItemForm({ onAdd, onCancel, t }) {
 
     setFormError(null)
     setScanError(null)
+    setScanResults(null)
     setScanning(true)
 
-    // Read file as base64
     const reader = new FileReader()
     reader.onload = async (ev) => {
       const dataUrl = ev.target.result
       setPhoto(dataUrl)
-      // Strip the data URL prefix to get raw base64
       const base64 = dataUrl.split(',')[1]
       const mimeType = file.type || 'image/jpeg'
       try {
-        const result = await analyzeClothing(base64, mimeType)
-        setName(result.name)
-        setCategory(result.category)
-        setColor(result.color)
-        setTempMin(result.tempMin)
-        setTempMax(result.tempMax)
-        setGender(result.gender)
+        const results = await analyzeClothing(base64, mimeType)
+        if (results.length === 1) {
+          prefillForm(results[0])
+        } else {
+          setScanResults(results)
+          setSelected(new Set(results.map((_, i) => i)))
+        }
       } catch (err) {
         console.error('Scan failed:', err)
         setScanError(t.formScanFailed)
@@ -64,6 +75,31 @@ function AddItemForm({ onAdd, onCancel, t }) {
       }
     }
     reader.readAsDataURL(file)
+  }
+
+  function toggleSelected(i) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(i) ? next.delete(i) : next.add(i)
+      return next
+    })
+  }
+
+  async function handleAddSelected() {
+    if (submitting || selected.size === 0) return
+    setSubmitting(true)
+    let lastError = null
+    for (const i of selected) {
+      const result = await onAdd({ ...scanResults[i], photo, layer: 1, tags: [] })
+      if (result?.error) lastError = result.error
+    }
+    setSubmitting(false)
+    if (!lastError) onDone()
+  }
+
+  function handleEditSingle(item) {
+    setScanResults(null)
+    prefillForm(item)
   }
 
   function handleUpload(e) {
@@ -83,8 +119,13 @@ function AddItemForm({ onAdd, onCancel, t }) {
     if (min >= max) { setFormError(t.formTempError); return }
     setFormError(null)
     setSubmitting(true)
-    await onAdd({ name: name.trim(), category, color, tempMin: min, tempMax: max, photo, gender, layer: 1, tags: [] })
+    const result = await onAdd({ name: name.trim(), category, color, tempMin: min, tempMax: max, photo, gender, layer: 1, tags: [] })
     setSubmitting(false)
+    if (result?.error) {
+      setFormError(result.error)
+    } else {
+      onDone()
+    }
   }
 
   return (
@@ -134,8 +175,61 @@ function AddItemForm({ onAdd, onCancel, t }) {
         <p className="text-xs rounded-xl p-3 mb-3 bg-[#fdeadd]" style={{ color: '#d6612f' }}>{scanError}</p>
       )}
 
+      {/* Multi-item picker */}
+      {scanResults && !scanning && (
+        <div className="mb-4">
+          <p className="text-xs font-medium mb-2" style={{ color: '#5b6270' }}>{t.scanPickerHint(scanResults.length)}</p>
+          <div className="space-y-2">
+            {scanResults.map((item, i) => (
+              <label key={i} className={`flex items-center gap-3 rounded-2xl p-3 border cursor-pointer transition-colors ${selected.has(i) ? 'bg-white border-[#ef7a46]' : 'bg-white/50 border-[#e8dfcc]'}`}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(i)}
+                  onChange={() => toggleSelected(i)}
+                  className="accent-[#ef7a46] w-4 h-4 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: '#2b2f38' }}>
+                    {CATEGORY_ICONS[item.category] ?? '👔'} {item.name}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: '#5b6270' }}>
+                    {t.categoryLabels?.[item.category] ?? item.category}
+                    {item.color ? ` · ${item.color}` : ''}
+                    {` · ${item.tempMin}°–${item.tempMax}°`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={e => { e.preventDefault(); handleEditSingle(item) }}
+                  className="text-xs px-2 py-1 rounded-full border border-[#e8dfcc] bg-[#fbf8f3] hover:bg-[#f4eee3] shrink-0"
+                  style={{ color: '#5b6270' }}
+                >
+                  {t.scanPickerEdit}
+                </button>
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              type="button"
+              disabled={submitting || selected.size === 0}
+              onClick={handleAddSelected}
+              className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Check size={15} />
+              {submitting ? '…' : t.scanPickerAdd(selected.size)}
+            </button>
+            <button type="button" onClick={onCancel}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#e8dfcc] text-sm font-medium hover:bg-[#f4eee3] transition-colors"
+              style={{ color: '#5b6270' }}>
+              <X size={15} /> {t.formCancel}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Fields */}
-      {!scanning && (
+      {!scanning && !scanResults && (
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="col-span-2">
             <label className="text-xs mb-1 block" style={{ color: '#5b6270' }}>{t.formName}</label>
@@ -177,11 +271,11 @@ function AddItemForm({ onAdd, onCancel, t }) {
         </div>
       )}
 
-      {formError && (
+      {formError && !scanResults && (
         <p className="text-xs rounded-xl p-3 mb-3 bg-[#fdeadd]" style={{ color: '#d6612f' }}>{formError}</p>
       )}
 
-      {!scanning && (
+      {!scanning && !scanResults && (
         <div className="flex gap-2">
           <button type="submit" disabled={submitting}
             className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -241,14 +335,9 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
     setTempRange({ min: -20, max: 40 })
   }
 
-  async function handleAdd(item) {
-    const result = await onAdd(item)
-    if (result?.error) {
-      setAddError(result.error)
-    } else {
-      setAddError(null)
-      setShowForm(false)
-    }
+  function closeForm() {
+    setShowForm(false)
+    setAddError(null)
   }
 
   return (
@@ -350,7 +439,7 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
       {addError && (
         <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-700">{addError}</div>
       )}
-      {showForm && <AddItemForm onAdd={handleAdd} onCancel={() => { setShowForm(false); setAddError(null) }} t={t} />}
+      {showForm && <AddItemForm onAdd={onAdd} onDone={closeForm} onCancel={closeForm} t={t} />}
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-3">

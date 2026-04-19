@@ -25,6 +25,7 @@ function AddItemForm({ onAdd, onCancel, t }) {
   const [gender, setGender] = useState('all')
   const [photo, setPhoto] = useState(null)
   const [scanning, setScanning] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [scanError, setScanError] = useState(null)
   const [formError, setFormError] = useState(null)
   const scanRef = useRef()
@@ -74,14 +75,16 @@ function AddItemForm({ onAdd, onCancel, t }) {
     reader.readAsDataURL(file)
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim() || submitting) return
     const min = Number(tempMin)
     const max = Number(tempMax)
     if (min >= max) { setFormError(t.formTempError); return }
     setFormError(null)
-    onAdd({ name: name.trim(), category, color, tempMin: min, tempMax: max, photo, gender, layer: 1, tags: [] })
+    setSubmitting(true)
+    await onAdd({ name: name.trim(), category, color, tempMin: min, tempMax: max, photo, gender, layer: 1, tags: [] })
+    setSubmitting(false)
   }
 
   return (
@@ -180,9 +183,9 @@ function AddItemForm({ onAdd, onCancel, t }) {
 
       {!scanning && (
         <div className="flex gap-2">
-          <button type="submit"
-            className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors">
-            <Check size={15} /> {t.formAdd}
+          <button type="submit" disabled={submitting}
+            className="flex items-center gap-1.5 bg-[#ef7a46] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#d6612f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <Check size={15} /> {submitting ? '…' : t.formAdd}
           </button>
           <button type="button" onClick={onCancel}
             className="flex items-center gap-1.5 bg-white px-4 py-2 rounded-full text-sm border border-[#e8dfcc] hover:bg-[#fbf8f3] transition-colors" style={{ color: '#5b6270' }}>

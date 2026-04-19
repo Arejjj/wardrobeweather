@@ -199,6 +199,7 @@ const WEATHER_FILTERS = ['all', 'rain', 'sun', 'cold', 'warm']
 export default function WardrobeView({ items, onAdd, onRemove, t }) {
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [addError, setAddError] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [weatherFilter, setWeatherFilter] = useState('all')
   const [tempRange, setTempRange] = useState({ min: -20, max: 40 })
@@ -237,9 +238,14 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
     setTempRange({ min: -20, max: 40 })
   }
 
-  function handleAdd(item) {
-    onAdd(item)
-    setShowForm(false)
+  async function handleAdd(item) {
+    const result = await onAdd(item)
+    if (result?.error) {
+      setAddError(result.error)
+    } else {
+      setAddError(null)
+      setShowForm(false)
+    }
   }
 
   return (
@@ -338,7 +344,10 @@ export default function WardrobeView({ items, onAdd, onRemove, t }) {
         ))}
       </div>
 
-      {showForm && <AddItemForm onAdd={handleAdd} onCancel={() => setShowForm(false)} t={t} />}
+      {addError && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-700">{addError}</div>
+      )}
+      {showForm && <AddItemForm onAdd={handleAdd} onCancel={() => { setShowForm(false); setAddError(null) }} t={t} />}
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-3">

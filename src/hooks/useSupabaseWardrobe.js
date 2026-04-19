@@ -94,7 +94,7 @@ export function useSupabaseWardrobe(userId) {
 
     if (err) {
       setError(err.message)
-      return null
+      return { error: err.message }
     }
     const newItem = toClient(data[0])
     setItems(prev => [newItem, ...prev])

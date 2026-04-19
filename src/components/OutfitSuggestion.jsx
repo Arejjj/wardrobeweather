@@ -51,7 +51,10 @@ export default function OutfitSuggestion({ outfit, weather, onReshuffle, t }) {
             )}
             <div className="flex-1">
               <p className="font-medium" style={{ color: '#2b2f38' }}>{item.name}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#5b6270' }}>{t.categoryLabels?.[item.category] ?? item.category}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#5b6270' }}>
+                {t.categoryLabels?.[item.category] ?? item.category}
+                {item.color ? ` · ${item.color}` : ''}
+              </p>
             </div>
             <div className="flex gap-1.5 flex-wrap justify-end">
               {item.isDefault && (

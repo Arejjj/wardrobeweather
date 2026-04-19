@@ -44,6 +44,6 @@ export async function seedDefaultWardrobeIfNeeded(userId) {
     .insert(itemsToInsert)
 
   if (error) {
-    console.error('Error seeding default wardrobe:', error)
+    console.error('Error seeding default wardrobe:', error.message, error.details, error.hint)
   }
 }

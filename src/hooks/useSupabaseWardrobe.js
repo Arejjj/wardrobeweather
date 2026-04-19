@@ -88,6 +88,7 @@ export function useSupabaseWardrobe(userId) {
         photo:      item.photo ?? null,
         gender:     item.gender ?? 'all',
         tags:       item.tags ?? [],
+        color:      item.color ?? null,
       }])
       .select()
 
@@ -95,7 +96,9 @@ export function useSupabaseWardrobe(userId) {
       setError(err.message)
       return null
     }
-    return data?.[0] ?? null
+    const newItem = toClient(data[0])
+    setItems(prev => [newItem, ...prev])
+    return newItem
   }
 
   async function removeItem(itemId) {
